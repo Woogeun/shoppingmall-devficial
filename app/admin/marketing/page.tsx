@@ -1,14 +1,15 @@
 import Link from "next/link";
+
+import { Button } from "@/features/ui";
 import { prisma } from "@/lib/prisma";
-import { Button } from "@/components/ui/Button";
 
 const TYPE_LABEL: Record<string, string> = {
   BANNER: "배너",
-  PROMO: "프로모션",
   NOTICE: "공지",
+  PROMO: "프로모션",
 };
 
-export default async function AdminMarketingPage() {
+const AdminMarketingPage = async () => {
   const list = await prisma.marketingContent.findMany({
     orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
   });
@@ -56,4 +57,6 @@ export default async function AdminMarketingPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminMarketingPage;

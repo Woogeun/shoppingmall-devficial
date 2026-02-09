@@ -1,12 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
 
-export function OrderDeleteButton({ orderId }: { orderId: string }) {
+import { Button } from "@/features/ui";
+
+type OrderDeleteButtonProps = {
+  orderId: string;
+};
+
+export const OrderDeleteButton = ({ orderId }: OrderDeleteButtonProps) => {
   const router = useRouter();
 
-  async function handleDelete() {
+  const handleDelete = async () => {
     const ok = window.confirm(
       "이 주문을 삭제하시겠습니까? 주문 및 주문 상품 정보가 모두 삭제됩니다."
     );
@@ -21,18 +26,17 @@ export function OrderDeleteButton({ orderId }: { orderId: string }) {
       return;
     }
     router.refresh();
-  }
+  };
 
   return (
     <Button
+      className="text-xs px-3 py-1.5"
+      size="sm"
       type="button"
       variant="danger"
-      size="sm"
       onClick={handleDelete}
-      className="text-xs px-3 py-1.5"
     >
       삭제
     </Button>
   );
-}
-
+};

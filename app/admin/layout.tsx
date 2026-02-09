@@ -1,8 +1,9 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import { getSession } from "@/lib/auth";
 
-const nav = [
+const NAV_ITEMS = [
   { href: "/admin", label: "대시보드" },
   { href: "/admin/products", label: "상품" },
   { href: "/admin/orders", label: "주문" },
@@ -12,9 +13,7 @@ const nav = [
   { href: "/admin/audit", label: "감사 로그" },
 ];
 
-export default async function AdminLayout({
-  children,
-}: { children: React.ReactNode }) {
+const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   const session = await getSession();
   if (!session || session.role !== "ADMIN") redirect("/login?from=/admin");
 
@@ -25,7 +24,7 @@ export default async function AdminLayout({
           <nav className="clay-card p-4 sticky top-24">
             <p className="text-xs font-medium text-[var(--muted)] mb-3">관리자</p>
             <ul className="space-y-1">
-              {nav.map(({ href, label }) => (
+              {NAV_ITEMS.map(({ href, label }) => (
                 <li key={href}>
                   <Link
                     href={href}
@@ -48,4 +47,6 @@ export default async function AdminLayout({
       </div>
     </div>
   );
-}
+};
+
+export default AdminLayout;

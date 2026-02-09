@@ -1,11 +1,13 @@
+import { OrderDeleteButton, OrderStatusSelect } from "@/features/admin";
+import { formatDate, formatPrice } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
-import { formatPrice, formatDate } from "@/lib/utils";
-import { OrderStatusSelect } from "./OrderStatusSelect";
-import { OrderDeleteButton } from "./OrderDeleteButton";
 
-export default async function AdminOrdersPage() {
+const AdminOrdersPage = async () => {
   const orders = await prisma.order.findMany({
-    include: { user: { select: { name: true, email: true } }, items: { include: { product: true } } },
+    include: {
+      user: { select: { email: true, name: true } },
+      items: { include: { product: true } },
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -26,29 +28,32 @@ export default async function AdminOrdersPage() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((o) => (
-                <tr key={o.id} className="border-b border-[var(--border)]">
-                  <td className="p-4">{formatDate(o.createdAt)}</td>
-                  <td className="p-4">
-                    <p className="font-medium text-foreground">{o.user.name}</p>
-                    <p className="text-xs text-[var(--muted)]">{o.user.email}</p>
-                  </td>
-                  <td className="p-4">{formatPrice(o.totalAmount)}</td>
-                  <td className="p-4">
-                    <OrderStatusSelect orderId={o.id} currentStatus={o.status} />
-                  </td>
-                  <td className="p-4">
-                    {o.trackingNumber ? (
-                      <span className="font-mono text-xs">{o.trackingNumber}</span>
-                    ) : (
-                      <span className="text-[var(--muted)]">-</span>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <OrderDeleteButton orderId={o.id} />
-                  </td>
-                </tr>
-              ))}
+              {orders.map((o) => {
+                const { id, createdAt, status, totalAmount, trackingNumber, user } = o;
+                return (
+                  <tr key={id} className="border-b border-[var(--border)]">
+                    <td className="p-4">{formatDate(createdAt)}</td>
+                    <td className="p-4">
+                      <p className="font-medium text-foreground">{user.name}</p>
+                      <p className="text-xs text-[var(--muted)]">{user.email}</p>
+                    </td>
+                    <td className="p-4">{formatPrice(totalAmount)}</td>
+                    <td className="p-4">
+                      <OrderStatusSelect currentStatus={status} orderId={id} />
+                    </td>
+                    <td className="p-4">
+                      {trackingNumber ? (
+                        <span className="font-mono text-xs">{trackingNumber}</span>
+                      ) : (
+                        <span className="text-[var(--muted)]">-</span>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      <OrderDeleteButton orderId={id} />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -58,4 +63,6 @@ export default async function AdminOrdersPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminOrdersPage;

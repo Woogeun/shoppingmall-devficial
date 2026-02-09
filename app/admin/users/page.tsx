@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
 
-export default async function AdminUsersPage() {
+const AdminUsersPage = async () => {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -48,4 +48,6 @@ export default async function AdminUsersPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminUsersPage;

@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+
 import { ORDER_STATUS_LABEL } from "@/lib/utils";
+
 import type { OrderStatus } from "@prisma/client";
 
 const STATUSES: OrderStatus[] = [
@@ -13,29 +15,31 @@ const STATUSES: OrderStatus[] = [
   "CANCELLED",
 ];
 
-export function OrderStatusSelect({
-  orderId,
-  currentStatus,
-}: {
-  orderId: string;
+type OrderStatusSelectProps = {
   currentStatus: OrderStatus;
-}) {
+  orderId: string;
+};
+
+export const OrderStatusSelect = ({
+  currentStatus,
+  orderId,
+}: OrderStatusSelectProps) => {
   const router = useRouter();
 
-  async function changeStatus(status: string) {
+  const changeStatus = async (status: string) => {
     const res = await fetch(`/api/admin/orders/${orderId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
     });
     if (res.ok) router.refresh();
-  }
+  };
 
   return (
     <select
+      className="input-soft px-3 py-1.5 text-sm rounded-lg min-w-[120px]"
       value={currentStatus}
       onChange={(e) => changeStatus(e.target.value)}
-      className="input-soft px-3 py-1.5 text-sm rounded-lg min-w-[120px]"
     >
       {STATUSES.map((s) => (
         <option key={s} value={s}>
@@ -44,4 +48,4 @@ export function OrderStatusSelect({
       ))}
     </select>
   );
-}
+};

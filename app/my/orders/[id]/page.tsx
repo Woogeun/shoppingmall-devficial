@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatPrice, formatDateTime, ORDER_STATUS_LABEL } from "@/lib/utils";
+import { formatDateTime, formatPrice, ORDER_STATUS_LABEL } from "@/lib/utils";
 
 const STEPS = [
   { key: "PAID", label: "결제 완료" },
@@ -11,11 +12,11 @@ const STEPS = [
   { key: "DELIVERED", label: "배송 완료" },
 ] as const;
 
-export default async function OrderDetailPage({
-  params,
-}: {
+type OrderDetailPageProps = {
   params: Promise<{ id: string }>;
-}) {
+};
+
+const OrderDetailPage = async ({ params }: OrderDetailPageProps) => {
   const session = await getSession();
   if (!session) notFound();
 
@@ -126,4 +127,6 @@ export default async function OrderDetailPage({
       </div>
     </div>
   );
-}
+};
+
+export default OrderDetailPage;

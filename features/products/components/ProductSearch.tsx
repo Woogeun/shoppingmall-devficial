@@ -2,18 +2,21 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 
-export function ProductSearch({
-  categories,
-  defaultQuery,
-  defaultCategory,
-}: {
+import { Button } from "@/features/ui";
+import { Input } from "@/features/ui";
+
+type ProductSearchProps = {
   categories: string[];
-  defaultQuery?: string;
   defaultCategory?: string;
-}) {
+  defaultQuery?: string;
+};
+
+export const ProductSearch = ({
+  categories,
+  defaultCategory,
+  defaultQuery,
+}: ProductSearchProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -37,26 +40,33 @@ export function ProductSearch({
           e.preventDefault();
           const form = e.currentTarget;
           const q = (form.querySelector('input[name="q"]') as HTMLInputElement)?.value;
-          updateParams({ q: q || undefined, category: defaultCategory });
+          updateParams({ category: defaultCategory, q: q || undefined });
         }}
       >
         <div className="flex-1">
           <Input
+            className="w-full"
+            defaultValue={defaultQuery}
             name="q"
             placeholder="상품명 검색"
-            defaultValue={defaultQuery}
-            className="w-full"
           />
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <select
             className="input-soft px-4 py-2.5 rounded-xl min-w-[120px]"
             value={defaultCategory ?? ""}
-            onChange={(e) => updateParams({ category: e.target.value || undefined, q: searchParams.get("q") ?? undefined })}
+            onChange={(e) =>
+              updateParams({
+                category: e.target.value || undefined,
+                q: searchParams.get("q") ?? undefined,
+              })
+            }
           >
             <option value="">전체 카테고리</option>
             {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
           <Button type="submit">검색</Button>
@@ -64,4 +74,4 @@ export function ProductSearch({
       </form>
     </div>
   );
-}
+};

@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
 
-export default async function AdminAuditPage() {
+const AdminAuditPage = async () => {
   const [userLogs, adminCount] = await Promise.all([
     prisma.userAuditLog.findMany({
       include: { user: { select: { name: true, email: true } } },
@@ -71,5 +71,7 @@ export default async function AdminAuditPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminAuditPage;
 

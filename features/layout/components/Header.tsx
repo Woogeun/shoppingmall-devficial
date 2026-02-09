@@ -4,18 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-const nav = [
+const NAV_ITEMS = [
   { href: "/", label: "홈" },
   { href: "/products", label: "상품" },
 ];
 
-export function Header({
-  session,
-  cartCount,
-}: {
-  session: { name: string; role: string } | null;
+type HeaderProps = {
   cartCount: number;
-}) {
+  session: { name: string; role: string } | null;
+};
+
+export const Header = ({ cartCount, session }: HeaderProps) => {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isAdmin = session?.role === "ADMIN";
@@ -23,29 +22,32 @@ export function Header({
   return (
     <header className="sticky top-0 z-50 clay-card border-x-0 border-t-0 rounded-none">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2 text-xl font-semibold text-foreground">
+        <Link
+          className="flex items-center gap-2 text-xl font-semibold text-foreground"
+          href="/"
+        >
           <span className="text-2xl">👟</span>
           <span className="hidden sm:inline">Shoe Mall</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          {nav.map(({ href, label }) => (
+          {NAV_ITEMS.map(({ href, label }) => (
             <Link
               key={href}
-              href={href}
               className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
                 pathname === href
                   ? "bg-[var(--pastel-lavender)] text-foreground"
                   : "text-[var(--muted)] hover:bg-[var(--pastel-peach)] hover:text-foreground"
               }`}
+              href={href}
             >
               {label}
             </Link>
           ))}
           {isAdmin && (
             <Link
-              href="/admin"
               className="rounded-xl px-4 py-2 text-sm font-medium text-amber-700 bg-amber-100/80 hover:bg-amber-200/80"
+              href="/admin"
             >
               관리자
             </Link>
@@ -54,9 +56,9 @@ export function Header({
 
         <div className="flex items-center gap-2">
           <Link
-            href="/cart"
-            className="relative rounded-xl p-2.5 btn-soft bg-[var(--surface)] text-foreground hover:bg-[var(--pastel-mint)]"
             aria-label="장바구니"
+            className="relative rounded-xl p-2.5 btn-soft bg-[var(--surface)] text-foreground hover:bg-[var(--pastel-mint)]"
+            href="/cart"
           >
             <span className="text-lg">🛒</span>
             {cartCount > 0 && (
@@ -68,8 +70,8 @@ export function Header({
           {session ? (
             <div className="hidden sm:flex items-center gap-2">
               <Link
-                href="/my/orders"
                 className="rounded-xl px-3 py-2 text-sm text-[var(--muted)] hover:bg-[var(--pastel-sky)] hover:text-foreground"
+                href="/my/orders"
               >
                 주문내역
               </Link>
@@ -77,25 +79,28 @@ export function Header({
                 {session.name}
               </span>
               <form action="/api/auth/logout" method="post">
-                <button type="submit" className="rounded-xl px-3 py-2 text-sm text-[var(--muted)] hover:bg-[var(--pastel-peach)] hover:text-foreground">
+                <button
+                  className="rounded-xl px-3 py-2 text-sm text-[var(--muted)] hover:bg-[var(--pastel-peach)] hover:text-foreground"
+                  type="submit"
+                >
                   로그아웃
                 </button>
               </form>
             </div>
           ) : (
             <Link
-              href="/login"
               className="rounded-xl px-4 py-2.5 btn-soft bg-[var(--pastel-mint)] text-sm font-medium text-foreground hover:bg-[var(--pastel-sky)]"
+              href="/login"
             >
               로그인
             </Link>
           )}
 
           <button
-            type="button"
+            aria-label="메뉴"
             className="rounded-xl p-2.5 md:hidden btn-soft bg-[var(--surface)]"
             onClick={() => setMobileOpen((o) => !o)}
-            aria-label="메뉴"
+            type="button"
           >
             {mobileOpen ? "✕" : "☰"}
           </button>
@@ -105,28 +110,39 @@ export function Header({
       {mobileOpen && (
         <div className="border-t border-[var(--border)] px-4 py-3 md:hidden clay-card-pressed rounded-none">
           <nav className="flex flex-col gap-1">
-            {nav.map(({ href, label }) => (
+            {NAV_ITEMS.map(({ href, label }) => (
               <Link
                 key={href}
+                className={`rounded-xl px-4 py-3 ${pathname === href ? "bg-[var(--pastel-lavender)]" : ""}`}
                 href={href}
                 onClick={() => setMobileOpen(false)}
-                className={`rounded-xl px-4 py-3 ${pathname === href ? "bg-[var(--pastel-lavender)]" : ""}`}
               >
                 {label}
               </Link>
             ))}
             {isAdmin && (
-              <Link href="/admin" onClick={() => setMobileOpen(false)} className="rounded-xl px-4 py-3 text-amber-700">
+              <Link
+                className="rounded-xl px-4 py-3 text-amber-700"
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+              >
                 관리자
               </Link>
             )}
             {session && (
               <>
-                <Link href="/my/orders" onClick={() => setMobileOpen(false)} className="rounded-xl px-4 py-3">
+                <Link
+                  className="rounded-xl px-4 py-3"
+                  href="/my/orders"
+                  onClick={() => setMobileOpen(false)}
+                >
                   주문내역
                 </Link>
                 <form action="/api/auth/logout" method="post">
-                  <button type="submit" className="w-full rounded-xl px-4 py-3 text-left text-[var(--muted)]">
+                  <button
+                    className="w-full rounded-xl px-4 py-3 text-left text-[var(--muted)]"
+                    type="submit"
+                  >
                     로그아웃
                   </button>
                 </form>
@@ -137,4 +153,4 @@ export function Header({
       )}
     </header>
   );
-}
+};

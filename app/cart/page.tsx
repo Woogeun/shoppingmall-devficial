@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
+
+import { CartClient } from "@/features/cart";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CartClient } from "./CartClient";
 
-export default async function CartPage() {
+const CartPage = async () => {
   const session = await getSession();
   if (!session) redirect("/login?from=/cart");
 
@@ -18,4 +19,6 @@ export default async function CartPage() {
       <CartClient items={items} />
     </div>
   );
-}
+};
+
+export default CartPage;

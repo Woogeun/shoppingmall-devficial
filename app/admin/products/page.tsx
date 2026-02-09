@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { formatPrice } from "@/lib/utils";
-import { Button } from "@/components/ui/Button";
 
-export default async function AdminProductsPage() {
+import { Button } from "@/features/ui";
+import { formatPrice } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
+
+const AdminProductsPage = async () => {
   const products = await prisma.product.findMany({
     include: { inventory: true },
     orderBy: { createdAt: "desc" },
@@ -71,4 +72,6 @@ export default async function AdminProductsPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminProductsPage;

@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { ProductForm } from "../ProductForm";
 
-export default async function EditProductPage({
-  params,
-}: { params: Promise<{ id: string }> }) {
+import { ProductForm } from "@/features/admin";
+import { prisma } from "@/lib/prisma";
+
+type EditProductPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+const EditProductPage = async ({ params }: EditProductPageProps) => {
   const { id } = await params;
   const product = await prisma.product.findUnique({
     where: { id },
@@ -12,33 +15,35 @@ export default async function EditProductPage({
   });
   if (!product) notFound();
 
+  const { brand, category, description, imageUrl, name, price, published, slug } = product;
   const initial = {
-    name: product.name,
-    slug: product.slug,
-    description: product.description ?? "",
-    price: String(product.price),
-    imageUrl: product.imageUrl ?? "",
-    category: product.category,
-    brand: product.brand,
-    published: product.published,
+    brand,
+    category,
+    description: description ?? "",
+    imageUrl: imageUrl ?? "",
+    name,
+    price: String(price),
+    published,
+    slug,
   };
-
   const initialInventory = product.inventory.map((i) => ({
-    size: i.size,
     quantity: String(i.quantity),
+    size: i.size,
   }));
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-foreground mb-6">상품 수정</h1>
       <ProductForm
-        productId={product.id}
         initial={initial}
         initialInventory={initialInventory}
+        productId={product.id}
       />
       <div className="mt-4 text-sm text-[var(--muted)]">
         재고는 아래 재고 관리에서 수정할 수 있습니다.
       </div>
     </div>
   );
-}
+};
+
+export default EditProductPage;

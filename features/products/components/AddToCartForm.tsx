@@ -1,34 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-type SizeOption = { size: string; quantity: number };
+import { Button } from "@/features/ui";
 
-export function AddToCartForm({
-  productId,
-  productName,
-  price,
-  sizes,
-  isLoggedIn,
-}: {
+type SizeOption = { quantity: number; size: string };
+
+type AddToCartFormProps = {
+  isLoggedIn: boolean;
+  price: number;
   productId: string;
   productName: string;
-  price: number;
   sizes: SizeOption[];
-  isLoggedIn: boolean;
-}) {
+};
+
+export const AddToCartForm = ({
+  isLoggedIn,
+  price,
+  productId,
+  productName,
+  sizes,
+}: AddToCartFormProps) => {
   const router = useRouter();
-  const [size, setSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{ text: string; type: "error" | "ok" } | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [size, setSize] = useState("");
 
-  const maxQty = size ? (sizes.find((s) => s.size === size)?.quantity ?? 0) : 0;
+  const maxQty = size
+    ? (sizes.find((s) => s.size === size)?.quantity ?? 0)
+    : 0;
 
-  async function handleAddToCart(e: React.FormEvent) {
+  const handleAddToCart = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoggedIn) {
       setMessage({ type: "error", text: "로그인 후 장바구니에 담을 수 있습니다." });
@@ -45,26 +50,31 @@ export function AddToCartForm({
     setLoading(true);
     setMessage(null);
     const res = await fetch("/api/cart", {
-      method: "POST",
+      body: JSON.stringify({ productId, quantity, size }),
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId, size, quantity }),
+      method: "POST",
     });
     const data = await res.json().catch(() => ({}));
     setLoading(false);
     if (!res.ok) {
-      setMessage({ type: "error", text: data.error ?? "장바구니 담기에 실패했습니다." });
+      setMessage({
+        type: "error",
+        text: data.error ?? "장바구니 담기에 실패했습니다.",
+      });
       return;
     }
     setMessage({ type: "ok", text: "장바구니에 담았습니다." });
     router.refresh();
-  }
+  };
 
   return (
     <div className="mt-8 clay-card p-6">
       <h3 className="font-semibold text-foreground mb-4">옵션 선택</h3>
-      <form onSubmit={handleAddToCart} className="space-y-4">
+      <form className="space-y-4" onSubmit={handleAddToCart}>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">사이즈</label>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            사이즈
+          </label>
           <div className="flex flex-wrap gap-2">
             {sizes.length === 0 ? (
               <p className="text-[var(--muted)]">재고 없음</p>
@@ -72,13 +82,13 @@ export function AddToCartForm({
               sizes.map((s) => (
                 <button
                   key={s.size}
-                  type="button"
-                  onClick={() => setSize(s.size)}
                   className={`rounded-xl px-4 py-2 border transition-colors ${
                     size === s.size
                       ? "bg-[var(--pastel-lavender)] border-[var(--accent)] text-foreground"
                       : "bg-[var(--surface)] border-[var(--border)] text-foreground hover:bg-[var(--pastel-peach)]"
                   }`}
+                  onClick={() => setSize(s.size)}
+                  type="button"
                 >
                   {s.size} ({s.quantity}개)
                 </button>
@@ -88,36 +98,51 @@ export function AddToCartForm({
         </div>
         {size && maxQty > 0 && (
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">수량</label>
+            <label className="block text-sm font-medium text-foreground mb-2">
+              수량
+            </label>
             <input
-              type="number"
-              min={1}
-              max={maxQty}
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value) || 1)}
               className="input-soft w-24 px-3 py-2"
+              max={maxQty}
+              min={1}
+              onChange={(e) => setQuantity(Number(e.target.value) || 1)}
+              type="number"
+              value={quantity}
             />
           </div>
         )}
         {message && (
-          <p className={message.type === "ok" ? "text-green-600" : "text-red-600"}>{message.text}</p>
+          <p
+            className={
+              message.type === "ok" ? "text-green-600" : "text-red-600"
+            }
+          >
+            {message.text}
+          </p>
         )}
         <div className="flex flex-wrap gap-3 pt-2">
-          <Button type="submit" disabled={loading || sizes.length === 0}>
+          <Button
+            disabled={loading || sizes.length === 0}
+            type="submit"
+          >
             {loading ? "처리 중..." : "장바구니 담기"}
           </Button>
           {isLoggedIn && (
             <Link href="/cart">
-              <Button variant="secondary" type="button">장바구니 보기</Button>
+              <Button type="button" variant="secondary">
+                장바구니 보기
+              </Button>
             </Link>
           )}
           {!isLoggedIn && (
             <Link href="/login">
-              <Button variant="secondary" type="button">로그인 후 구매하기</Button>
+              <Button type="button" variant="secondary">
+                로그인 후 구매하기
+              </Button>
             </Link>
           )}
         </div>
       </form>
     </div>
   );
-}
+};

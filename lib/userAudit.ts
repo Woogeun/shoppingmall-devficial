@@ -2,14 +2,13 @@ import { prisma } from "@/lib/prisma";
 import type { SessionUser } from "@/lib/auth";
 import type { NextRequest } from "next/server";
 
-type EntityType = "PRODUCT" | "ORDER" | "CART" | "AUTH";
+type EntityType = "AUTH" | "CART" | "INVENTORY" | "MARKETING" | "ORDER" | "PRODUCT";
 
 function extractRequestContext(request?: NextRequest) {
   if (!request) return { ip: undefined as string | undefined, userAgent: undefined as string | undefined };
   const ip =
     request.headers.get("x-forwarded-for") ??
-    // @ts-expect-error - NextRequest may expose ip depending on runtime
-    (request as any).ip ??
+    (request as NextRequest & { ip?: string }).ip ??
     undefined;
   const userAgent = request.headers.get("user-agent") ?? undefined;
   return { ip, userAgent };

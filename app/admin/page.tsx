@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+
 import { formatPrice } from "@/lib/utils";
-export default async function AdminDashboardPage() {
+import { prisma } from "@/lib/prisma";
+
+const AdminDashboardPage = async () => {
   const [recentOrders, lowStock] = await Promise.all([
     prisma.order.findMany({
       take: 5,
@@ -64,4 +66,6 @@ export default async function AdminDashboardPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminDashboardPage;

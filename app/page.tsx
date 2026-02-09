@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { formatPrice } from "@/lib/utils";
 
-export default async function HomePage() {
+import { formatPrice } from "@/lib/utils";
+import { prisma } from "@/lib/prisma";
+
+const HomePage = async () => {
   const [banners, products] = await Promise.all([
     prisma.marketingContent.findMany({
       where: { type: "BANNER", active: true },
@@ -23,29 +24,32 @@ export default async function HomePage() {
       {banners.length > 0 && (
         <section className="mb-10">
           <div className="flex flex-col gap-4 sm:gap-6">
-            {banners.map((b) => (
-              <Link
-                key={b.id}
-                href={b.linkUrl || "#"}
-                className="block clay-card floating-widget overflow-hidden rounded-2xl"
-              >
-                {b.imageUrl ? (
-                  <img
-                    src={b.imageUrl}
-                    alt={b.title}
-                    className="w-full h-40 sm:h-52 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-40 sm:h-52 bg-[var(--pastel-lavender)] flex items-center justify-center">
-                    <span className="text-xl font-semibold text-foreground">{b.title}</span>
+            {banners.map((b) => {
+              const { content, id, imageUrl, linkUrl, title } = b;
+              return (
+                <Link
+                  key={id}
+                  href={linkUrl ?? "#"}
+                  className="block clay-card floating-widget overflow-hidden rounded-2xl"
+                >
+                  {imageUrl ? (
+                    <img
+                      alt={title}
+                      className="w-full h-40 sm:h-52 object-cover"
+                      src={imageUrl}
+                    />
+                  ) : (
+                    <div className="w-full h-40 sm:h-52 bg-[var(--pastel-lavender)] flex items-center justify-center">
+                      <span className="text-xl font-semibold text-foreground">{title}</span>
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h2 className="font-semibold text-foreground">{title}</h2>
+                    {content && <p className="text-sm text-[var(--muted)] mt-1">{content}</p>}
                   </div>
-                )}
-                <div className="p-4">
-                  <h2 className="font-semibold text-foreground">{b.title}</h2>
-                  {b.content && <p className="text-sm text-[var(--muted)] mt-1">{b.content}</p>}
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
@@ -62,28 +66,29 @@ export default async function HomePage() {
           </Link>
         </div>
         <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {products.map((p) => (
-            <li key={p.id}>
-              <Link
-                href={`/products/${p.slug}`}
-                className="block clay-card floating-widget p-4 h-full transition-transform hover:scale-[1.02]"
-              >
-                <div className="aspect-square rounded-xl bg-[var(--pastel-peach)] overflow-hidden mb-3">
-                  {p.imageUrl ? (
-                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl">👟</div>
-                  )}
-                </div>
-                <p className="text-xs text-[var(--muted)]">{p.brand}</p>
-                <h3 className="font-semibold text-foreground line-clamp-2">{p.name}</h3>
-                <p className="mt-1 font-medium text-foreground">{formatPrice(p.price)}</p>
-                {p.inventory.length === 0 && (
-                  <p className="text-xs text-red-600 mt-1">품절</p>
-                )}
-              </Link>
-            </li>
-          ))}
+          {products.map((p) => {
+            const { brand, id, imageUrl, inventory, name, price, slug } = p;
+            return (
+              <li key={id}>
+                <Link
+                  href={`/products/${slug}`}
+                  className="block clay-card floating-widget p-4 h-full transition-transform hover:scale-[1.02]"
+                >
+                  <div className="aspect-square rounded-xl bg-[var(--pastel-peach)] overflow-hidden mb-3">
+                    {imageUrl ? (
+                      <img alt={name} className="w-full h-full object-cover" src={imageUrl} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-4xl">👟</div>
+                    )}
+                  </div>
+                  <p className="text-xs text-[var(--muted)]">{brand}</p>
+                  <h3 className="font-semibold text-foreground line-clamp-2">{name}</h3>
+                  <p className="mt-1 font-medium text-foreground">{formatPrice(price)}</p>
+                  {inventory.length === 0 && <p className="text-xs text-red-600 mt-1">품절</p>}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
         {products.length === 0 && (
           <div className="clay-card p-12 text-center text-[var(--muted)]">
@@ -93,4 +98,6 @@ export default async function HomePage() {
       </section>
     </div>
   );
-}
+};
+
+export default HomePage;

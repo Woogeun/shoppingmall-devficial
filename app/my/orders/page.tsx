@@ -1,10 +1,11 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatPrice, formatDate, ORDER_STATUS_LABEL } from "@/lib/utils";
+import { formatDate, formatPrice, ORDER_STATUS_LABEL } from "@/lib/utils";
 
-export default async function MyOrdersPage() {
+const MyOrdersPage = async () => {
   const session = await getSession();
   if (!session) redirect("/login?from=/my/orders");
 
@@ -57,4 +58,6 @@ export default async function MyOrdersPage() {
       )}
     </div>
   );
-}
+};
+
+export default MyOrdersPage;

@@ -1,52 +1,54 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { useState } from "react";
+
+import { Button, Input } from "@/features/ui";
 
 const TYPES = [
-  { value: "BANNER", label: "배너" },
-  { value: "PROMO", label: "프로모션" },
-  { value: "NOTICE", label: "공지" },
+  { label: "배너", value: "BANNER" },
+  { label: "공지", value: "NOTICE" },
+  { label: "프로모션", value: "PROMO" },
 ] as const;
 
 type FormData = {
-  title: string;
-  type: string;
+  active: boolean;
   content: string;
+  endAt: string;
   imageUrl: string;
   linkUrl: string;
-  startAt: string;
-  endAt: string;
-  active: boolean;
   sortOrder: number;
+  startAt: string;
+  title: string;
+  type: string;
 };
 
-export function MarketingForm({
-  contentId,
-  initial,
-}: {
+type MarketingFormProps = {
   contentId?: string;
   initial?: Partial<FormData>;
-}) {
+};
+
+export const MarketingForm = ({
+  contentId,
+  initial,
+}: MarketingFormProps) => {
   const router = useRouter();
   const [data, setData] = useState<FormData>({
-    title: "",
-    type: "BANNER",
+    active: true,
     content: "",
+    endAt: "",
     imageUrl: "",
     linkUrl: "",
-    startAt: "",
-    endAt: "",
-    active: true,
     sortOrder: 0,
+    startAt: "",
+    title: "",
+    type: "BANNER",
     ...initial,
   });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!data.title) {
@@ -54,22 +56,24 @@ export function MarketingForm({
       return;
     }
     setLoading(true);
-    const url = contentId ? `/api/admin/marketing/${contentId}` : "/api/admin/marketing";
+    const url = contentId
+      ? `/api/admin/marketing/${contentId}`
+      : "/api/admin/marketing";
     const method = contentId ? "PATCH" : "POST";
     const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title: data.title,
-        type: data.type,
+        active: data.active,
         content: data.content || null,
+        endAt: data.endAt ? new Date(data.endAt).toISOString() : null,
         imageUrl: data.imageUrl || null,
         linkUrl: data.linkUrl || null,
-        startAt: data.startAt ? new Date(data.startAt).toISOString() : null,
-        endAt: data.endAt ? new Date(data.endAt).toISOString() : null,
-        active: data.active,
         sortOrder: data.sortOrder,
+        startAt: data.startAt ? new Date(data.startAt).toISOString() : null,
+        title: data.title,
+        type: data.type,
       }),
+      headers: { "Content-Type": "application/json" },
+      method,
     });
     const result = await res.json().catch(() => ({}));
     setLoading(false);
@@ -79,25 +83,30 @@ export function MarketingForm({
     }
     router.push("/admin/marketing");
     router.refresh();
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="clay-card p-6 space-y-6 max-w-2xl">
+    <form
+      className="clay-card p-6 space-y-6 max-w-2xl"
+      onSubmit={handleSubmit}
+    >
       <Input
         label="제목"
+        required
         value={data.title}
         onChange={(e) => setData((d) => ({ ...d, title: e.target.value }))}
-        required
       />
       <div>
         <label className="block text-sm font-medium mb-1.5">유형</label>
         <select
+          className="input-soft w-full px-4 py-2.5"
           value={data.type}
           onChange={(e) => setData((d) => ({ ...d, type: e.target.value }))}
-          className="input-soft w-full px-4 py-2.5"
         >
           {TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
           ))}
         </select>
       </div>
@@ -106,52 +115,69 @@ export function MarketingForm({
         <textarea
           className="input-soft w-full px-4 py-2.5 min-h-[80px]"
           value={data.content}
-          onChange={(e) => setData((d) => ({ ...d, content: e.target.value }))}
+          onChange={(e) =>
+            setData((d) => ({ ...d, content: e.target.value }))
+          }
         />
       </div>
       <Input
         label="이미지 URL"
         value={data.imageUrl}
-        onChange={(e) => setData((d) => ({ ...d, imageUrl: e.target.value }))}
+        onChange={(e) =>
+          setData((d) => ({ ...d, imageUrl: e.target.value }))
+        }
       />
       <Input
         label="링크 URL"
         value={data.linkUrl}
-        onChange={(e) => setData((d) => ({ ...d, linkUrl: e.target.value }))}
+        onChange={(e) =>
+          setData((d) => ({ ...d, linkUrl: e.target.value }))
+        }
       />
       <div className="grid gap-4 sm:grid-cols-2">
         <Input
           label="노출 시작"
           type="datetime-local"
           value={data.startAt}
-          onChange={(e) => setData((d) => ({ ...d, startAt: e.target.value }))}
+          onChange={(e) =>
+            setData((d) => ({ ...d, startAt: e.target.value }))
+          }
         />
         <Input
           label="노출 종료"
           type="datetime-local"
           value={data.endAt}
-          onChange={(e) => setData((d) => ({ ...d, endAt: e.target.value }))}
+          onChange={(e) =>
+            setData((d) => ({ ...d, endAt: e.target.value }))
+          }
         />
       </div>
       <Input
         label="정렬 순서"
-        type="number"
         min={0}
+        type="number"
         value={String(data.sortOrder)}
-        onChange={(e) => setData((d) => ({ ...d, sortOrder: parseInt(e.target.value, 10) || 0 }))}
+        onChange={(e) =>
+          setData((d) => ({
+            ...d,
+            sortOrder: parseInt(e.target.value, 10) || 0,
+          }))
+        }
       />
       <label className="flex items-center gap-2">
         <input
-          type="checkbox"
           checked={data.active}
-          onChange={(e) => setData((d) => ({ ...d, active: e.target.checked }))}
+          type="checkbox"
+          onChange={(e) =>
+            setData((d) => ({ ...d, active: e.target.checked }))
+          }
         />
         <span className="text-sm">노출 활성화</span>
       </label>
       {error && <p className="text-red-600 text-sm">{error}</p>}
-      <Button type="submit" disabled={loading}>
+      <Button disabled={loading} type="submit">
         {loading ? "저장 중..." : contentId ? "수정" : "등록"}
       </Button>
     </form>
   );
-}
+};

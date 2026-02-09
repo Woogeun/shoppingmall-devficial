@@ -1,7 +1,7 @@
+import { InventoryEdit } from "@/features/admin";
 import { prisma } from "@/lib/prisma";
-import { InventoryEdit } from "./InventoryEdit";
 
-export default async function AdminInventoryPage() {
+const AdminInventoryPage = async () => {
   const items = await prisma.inventory.findMany({
     include: { product: { select: { name: true, slug: true } } },
     orderBy: [{ product: { name: "asc" } }, { size: "asc" }],
@@ -32,7 +32,7 @@ export default async function AdminInventoryPage() {
                     </span>
                   </td>
                   <td className="p-4">
-                    <InventoryEdit inventoryId={inv.id} currentQuantity={inv.quantity} />
+                    <InventoryEdit currentQuantity={inv.quantity} inventoryId={inv.id} />
                   </td>
                 </tr>
               ))}
@@ -45,4 +45,6 @@ export default async function AdminInventoryPage() {
       </div>
     </div>
   );
-}
+};
+
+export default AdminInventoryPage;
