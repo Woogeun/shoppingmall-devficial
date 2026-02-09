@@ -1,0 +1,157 @@
+// Prisma schema - SQLite (로컬 파일)
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT  // 결제 대기
+  PAID             // 결제 완료
+  PREPARING        // 상품 준비중
+  SHIPPED          // 배송중
+  DELIVERED        // 배송 완료
+  CANCELLED        // 취소
+}
+
+enum MarketingType {
+  BANNER
+  PROMO
+  NOTICE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses   Address[]
+  cartItems   CartItem[]
+  orders      Order[]
+}
+
+model Address {
+  id        String @id @default(cuid())
+  userId    String
+  label     String   // 집, 회사 등
+  recipient String
+  phone     String
+  zipCode   String
+  address1  String
+  address2  String?
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([userId])
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Int      // 원 단위
+  imageUrl    String?
+  category    String   // 스니커즈, 부츠 등
+  brand       String
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inventory   Inventory[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+}
+
+model Inventory {
+  id        String  @id @default(cuid())
+  productId String
+  size      String  // 230, 240, 250 등
+  quantity  Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, size])
+  @@index([productId])
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  userId    String
+  productId String
+  size      String
+  quantity  Int    @default(1)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId, size])
+  @@index([userId])
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  userId           String
+  status           OrderStatus @default(PENDING_PAYMENT)
+  totalAmount      Int
+  shippingAddressId String?
+  recipient        String?
+  phone            String?
+  zipCode          String?
+  address1         String?
+  address2         String?
+  paidAt           DateTime?
+  shippedAt        DateTime?
+  deliveredAt      DateTime?
+  trackingNumber   String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  user    User       @relation(fields: [userId], references: [id])
+  address Address?   @relation(fields: [shippingAddressId], references: [id])
+  items   OrderItem[]
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  productId  String
+  size       String
+  quantity   Int
+  priceAtOrder Int  // 주문 시점 가격
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+model MarketingContent {
+  id        String        @id @default(cuid())
+  title     String
+  type      MarketingType
+  content   String?
+  imageUrl  String?
+  linkUrl   String?
+  startAt   DateTime?
+  endAt     DateTime?
+  active    Boolean       @default(true)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}

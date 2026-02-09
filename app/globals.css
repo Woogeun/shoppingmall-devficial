@@ -1,8 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Pastel claymorphism palette */
+  --background: #f5f0eb;
+  --foreground: #2d2a26;
+  --surface: #faf8f5;
+  --surface-elevated: #ffffff;
+  --muted: #9c968e;
+  --border: rgba(45, 42, 38, 0.08);
+  --shadow-soft: 8px 8px 24px rgba(180, 170, 160, 0.25), -8px -8px 24px rgba(255, 255, 255, 0.8);
+  --shadow-inner: inset 4px 4px 12px rgba(180, 170, 160, 0.2);
+  --pastel-pink: #f8e2e8;
+  --pastel-mint: #e0f2ef;
+  --pastel-lavender: #e8e4f3;
+  --pastel-peach: #fce8dc;
+  --pastel-sky: #dceaf8;
+  --accent: #b8a99a;
+  --accent-strong: #8b7d6e;
 }
 
 @theme inline {
@@ -12,15 +26,67 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Claymorphism card */
+.clay-card {
+  background: var(--surface);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
+}
+
+.clay-card-pressed {
+  background: var(--surface);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-inner);
+  border: 1px solid var(--border);
+}
+
+/* Soft rounded buttons */
+.btn-soft {
+  border-radius: 1rem;
+  box-shadow: 6px 6px 16px rgba(180, 170, 160, 0.2), -4px -4px 12px rgba(255, 255, 255, 0.7);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-soft:hover {
+  transform: translateY(-1px);
+  box-shadow: 8px 8px 20px rgba(180, 170, 160, 0.25), -6px -6px 16px rgba(255, 255, 255, 0.8);
+}
+
+.btn-soft:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-inner);
+}
+
+/* Floating widget style */
+.floating-widget {
+  border-radius: 1.5rem;
+  box-shadow: 12px 12px 32px rgba(180, 170, 160, 0.2), -8px -8px 24px rgba(255, 255, 255, 0.9);
+  transform: perspective(800px) rotateX(0deg) rotateY(0deg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.floating-widget:hover {
+  box-shadow: 16px 16px 40px rgba(180, 170, 160, 0.25), -10px -10px 28px rgba(255, 255, 255, 0.95);
+}
+
+/* Input style */
+.input-soft {
+  border-radius: 0.875rem;
+  border: 1px solid var(--border);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-inner);
+}
+
+.input-soft:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-inner), 0 0 0 3px rgba(184, 169, 154, 0.2);
 }

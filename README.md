@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shoe Mall 👟
 
-## Getting Started
+온라인 신발 쇼핑몰 (Next.js + Prisma + SQLite)
 
-First, run the development server:
+## 기능
+
+### 회원
+- 상품 검색·필터(카테고리)·상세 보기
+- 장바구니 담기·수량 변경·주문하기
+- 주문/결제 후 배송 상태 확인 (결제완료 → 준비중 → 배송중 → 배송완료)
+
+### 관리자
+- **대시보드**: 전체 상품 수, 주문 수, 매출, 회원 수, 최근 주문, 재고 부족 현황
+- **상품**: 등록·수정 (이름, 가격, 카테고리, 재고 등)
+- **주문**: 목록 조회, 주문 상태 변경, 배송 단계 관리
+- **재고**: 사이즈별 수량 수정
+- **사용자**: 회원 목록 조회
+- **마케팅**: 배너/프로모션/공지 등록·수정, 노출 기간·순서 설정
+
+### 공통
+- 반응형 UI (PC·모바일)
+- 클레이모피즘·파스텔 톤 디자인
+
+## 실행 방법
 
 ```bash
+# 의존성 설치
+npm install
+
+# DB 마이그레이션 (이미 되어 있으면 생략)
+npx prisma migrate dev
+
+# 시드 데이터 (관리자·테스트 회원·상품·배너)
+npm run seed
+
+# 개발 서버
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저에서 [http://localhost:3000](http://localhost:3000) 접속
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 테스트 계정 (시드)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| 구분 | 이메일 | 비밀번호 |
+|------|--------|----------|
+| 관리자 | admin@shoppingmall.com | admin123 |
+| 회원 | user@test.com | user123 |
 
-## Learn More
+- 관리자로 로그인 후 **관리자** 메뉴에서 상품·주문·재고·마케팅 관리
+- 회원으로 로그인 후 상품 검색·장바구니·주문·주문내역에서 배송 상태 확인
 
-To learn more about Next.js, take a look at the following resources:
+## 기술 스택
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Next.js 16** (App Router)
+- **Prisma 7** + **SQLite** (로컬 파일 `prisma/dev.db`)
+- **Tailwind CSS 4**
+- type-based 폴더 구조 (`app/`, `components/`, `lib/`)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 프로젝트 구조
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/` - 페이지·API 라우트
+- `app/admin/` - 관리자 페이지 (상품·주문·재고·사용자·마케팅·대시보드)
+- `app/my/orders/` - 주문 내역·배송 조회
+- `components/` - layout, ui
+- `lib/` - prisma, auth, utils
+- `prisma/` - 스키마, 마이그레이션, 시드
