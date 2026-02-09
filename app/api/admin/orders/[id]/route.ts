@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logUserAction } from "@/lib/userAudit";
 
 const VALID_STATUSES = [
   "PENDING_PAYMENT",
@@ -44,9 +45,23 @@ export async function PATCH(
     updateData.deliveredAt = new Date();
   }
 
-  await prisma.order.update({
+  const order = await prisma.order.update({
     where: { id },
     data: updateData,
+  });
+
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "ADMIN_ORDER_STATUS_UPDATE",
+    entityType: "ORDER",
+    entityId: id,
+    meta: { status: order.status, trackingNumber: order.trackingNumber },
+    request,
   });
 
   return NextResponse.json({ ok: true });
@@ -65,6 +80,19 @@ export async function DELETE(
 
   await prisma.order.delete({
     where: { id },
+  });
+
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "ADMIN_ORDER_DELETE",
+    entityType: "ORDER",
+    entityId: id,
+    request: _request,
   });
 
   return NextResponse.json({ ok: true });

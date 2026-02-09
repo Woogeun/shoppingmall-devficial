@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logUserAction } from "@/lib/userAudit";
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "제목과 유형을 입력해주세요." }, { status: 400 });
   }
 
-  await prisma.marketingContent.create({
+  const mc = await prisma.marketingContent.create({
     data: {
       title,
       type,
@@ -27,6 +28,20 @@ export async function POST(request: NextRequest) {
       active: active !== false,
       sortOrder: parseInt(sortOrder, 10) || 0,
     },
+  });
+
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "ADMIN_MARKETING_CREATE",
+    entityType: "MARKETING",
+    entityId: mc.id,
+    meta: { title: mc.title, type: mc.type },
+    request,
   });
 
   return NextResponse.json({ ok: true });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logUserAction } from "@/lib/userAudit";
 
 export async function PATCH(
   request: NextRequest,
@@ -25,7 +26,7 @@ export async function PATCH(
     sortOrder,
   } = body;
 
-  await prisma.marketingContent.update({
+  const updated = await prisma.marketingContent.update({
     where: { id },
     data: {
       ...(title != null && { title }),
@@ -40,6 +41,20 @@ export async function PATCH(
         sortOrder: parseInt(sortOrder, 10) || 0,
       }),
     },
+  });
+
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "ADMIN_MARKETING_UPDATE",
+    entityType: "MARKETING",
+    entityId: id,
+    meta: { title: updated.title, type: updated.type, active: updated.active },
+    request,
   });
 
   return NextResponse.json({ ok: true });
@@ -58,6 +73,19 @@ export async function DELETE(
 
   await prisma.marketingContent.delete({
     where: { id },
+  });
+
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "ADMIN_MARKETING_DELETE",
+    entityType: "MARKETING",
+    entityId: id,
+    request: _request,
   });
 
   return NextResponse.json({ ok: true });

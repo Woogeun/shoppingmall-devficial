@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logUserAction } from "@/lib/userAudit";
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
@@ -84,6 +85,20 @@ export async function POST(request: NextRequest) {
 
     await tx.cartItem.deleteMany({ where: { userId: session.id } });
     return o;
+  });
+
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "PLACE_ORDER",
+    entityType: "ORDER",
+    entityId: order.id,
+    meta: { totalAmount, itemCount: cartItems.length },
+    request,
   });
 
   return NextResponse.json({ orderId: order.id });

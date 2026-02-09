@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logUserAction } from "@/lib/userAudit";
 
 export async function PATCH(
   request: NextRequest,
@@ -35,7 +36,7 @@ export async function PATCH(
     }
   }
 
-  await prisma.product.update({
+  const updated = await prisma.product.update({
     where: { id },
     data: {
       ...(name != null && { name }),
@@ -63,6 +64,20 @@ export async function PATCH(
       });
     }
   }
+
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "ADMIN_PRODUCT_UPDATE",
+    entityType: "PRODUCT",
+    entityId: id,
+    meta: { name: updated.name, slug: updated.slug, price: updated.price },
+    request,
+  });
 
   return NextResponse.json({ ok: true });
 }

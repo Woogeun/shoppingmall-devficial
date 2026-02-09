@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logUserAction } from "@/lib/userAudit";
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
@@ -54,6 +55,20 @@ export async function POST(request: NextRequest) {
         })),
     });
   }
+
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "ADMIN_PRODUCT_CREATE",
+    entityType: "PRODUCT",
+    entityId: product.id,
+    meta: { name: product.name, slug: product.slug, price: product.price },
+    request,
+  });
 
   return NextResponse.json({ id: product.id });
 }

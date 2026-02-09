@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { setSession } from "@/lib/auth";
+import { logUserAction } from "@/lib/userAudit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,6 +24,19 @@ export async function POST(request: NextRequest) {
     });
 
     await setSession(user.id);
+    await logUserAction({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: "CUSTOMER",
+      },
+      action: "REGISTER",
+      entityType: "AUTH",
+      entityId: user.id,
+      meta: { email: user.email },
+      request,
+    });
     return NextResponse.json({ ok: true, user: { id: user.id, name: user.name, role: user.role } });
   } catch (e) {
     return NextResponse.json({ error: "회원가입 처리 중 오류가 발생했습니다." }, { status: 500 });

@@ -1,46 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
-
 export default async function AdminDashboardPage() {
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  const [
-    productCount,
-    orderCount,
-    totalSalesAgg,
-    todaySalesAgg,
-    monthSalesAgg,
-    userCount,
-    recentOrders,
-    lowStock,
-    itemsSoldAgg,
-  ] = await Promise.all([
-    prisma.product.count(),
-    prisma.order.count({ where: { status: { not: "CANCELLED" } } }),
-    prisma.order.aggregate({
-      where: { status: { in: ["PAID", "PREPARING", "SHIPPED", "DELIVERED"] } },
-      _sum: { totalAmount: true },
-    }),
-    prisma.order.aggregate({
-      where: {
-        status: { in: ["PAID", "PREPARING", "SHIPPED", "DELIVERED"] },
-        createdAt: { gte: startOfToday },
-      },
-      _sum: { totalAmount: true },
-      _count: { _all: true },
-    }),
-    prisma.order.aggregate({
-      where: {
-        status: { in: ["PAID", "PREPARING", "SHIPPED", "DELIVERED"] },
-        createdAt: { gte: startOfMonth },
-      },
-      _sum: { totalAmount: true },
-      _count: { _all: true },
-    }),
-    prisma.user.count(),
+  const [recentOrders, lowStock] = await Promise.all([
     prisma.order.findMany({
       take: 5,
       orderBy: { createdAt: "desc" },
@@ -51,60 +13,11 @@ export default async function AdminDashboardPage() {
       include: { product: { select: { name: true } } },
       take: 5,
     }),
-    prisma.orderItem.aggregate({
-      where: {
-        order: {
-          status: { in: ["PAID", "PREPARING", "SHIPPED", "DELIVERED"] },
-        },
-      },
-      _sum: { quantity: true },
-    }),
   ]);
-
-  const totalSales = totalSalesAgg._sum.totalAmount ?? 0;
-  const todaySales = todaySalesAgg._sum.totalAmount ?? 0;
-  const monthSales = monthSalesAgg._sum.totalAmount ?? 0;
-  const monthOrderCount = monthSalesAgg._count._all ?? 0;
-  const itemsSold = itemsSoldAgg._sum.quantity ?? 0;
-  const avgOrderValue = orderCount > 0 ? Math.round(totalSales / orderCount) : 0;
-  const avgMonthOrderValue = monthOrderCount > 0 ? Math.round(monthSales / monthOrderCount) : 0;
-
-  const stats = [
-    { label: "총 매출", value: formatPrice(totalSales), href: "/admin/orders" },
-    { label: "오늘 매출", value: formatPrice(todaySales), href: "/admin/orders" },
-    { label: "이번 달 매출", value: formatPrice(monthSales), href: "/admin/orders" },
-    { label: "평균 주문 금액", value: formatPrice(avgOrderValue), href: "/admin/orders" },
-  ];
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-foreground mb-6">대시보드</h1>
-
-      {/* 주요 매출 지표 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((s) => (
-          <Link key={s.label} href={s.href} className="clay-card floating-widget p-6 block hover:scale-[1.02] transition-transform">
-            <p className="text-sm text-[var(--muted)]">{s.label}</p>
-            <p className="text-xl font-bold text-foreground mt-1">{s.value}</p>
-          </Link>
-        ))}
-      </div>
-
-      {/* 주문/회원 개요 & 판매량 */}
-      <div className="grid lg:grid-cols-3 gap-4 mb-8">
-        <div className="clay-card p-5">
-          <p className="text-sm text-[var(--muted)] mb-1">전체 주문 수</p>
-          <p className="text-2xl font-bold text-foreground">{orderCount.toLocaleString()}건</p>
-        </div>
-        <div className="clay-card p-5">
-          <p className="text-sm text-[var(--muted)] mb-1">이번 달 주문 수</p>
-          <p className="text-2xl font-bold text-foreground">{monthOrderCount.toLocaleString()}건</p>
-        </div>
-        <div className="clay-card p-5">
-          <p className="text-sm text-[var(--muted)] mb-1">누적 판매 수량</p>
-          <p className="text-2xl font-bold text-foreground">{itemsSold.toLocaleString()}켤레</p>
-        </div>
-      </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="clay-card p-6">

@@ -42,6 +42,7 @@ model User {
   addresses   Address[]
   cartItems   CartItem[]
   orders      Order[]
+  userLogs    UserAuditLog[]
 }
 
 model Address {
@@ -154,4 +155,21 @@ model MarketingContent {
   sortOrder Int           @default(0)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+}
+
+model UserAuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String   // 예: LOGIN, REGISTER, ADD_TO_CART, PLACE_ORDER
+  entityType String   // 예: PRODUCT, ORDER, CART
+  entityId   String?
+  meta       String?  // JSON 직렬화된 추가 정보
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
 }

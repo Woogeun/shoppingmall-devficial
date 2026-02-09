@@ -9,6 +9,7 @@ const nav = [
   { href: "/admin/inventory", label: "재고" },
   { href: "/admin/users", label: "사용자" },
   { href: "/admin/marketing", label: "마케팅" },
+  { href: "/admin/audit", label: "감사 로그" },
 ];
 
 export default async function AdminLayout({

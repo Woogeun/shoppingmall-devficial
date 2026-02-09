@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logUserAction } from "@/lib/userAudit";
 
 export async function GET() {
   const session = await getSession();
@@ -50,6 +51,19 @@ export async function POST(request: NextRequest) {
       data: { userId: session.id, productId, size, quantity },
     });
   }
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: existing ? "CART_UPDATE" : "CART_ADD",
+    entityType: "CART",
+    entityId: productId,
+    meta: { size, quantity },
+    request,
+  });
   return NextResponse.json({ ok: true });
 }
 
@@ -74,11 +88,37 @@ export async function PATCH(request: NextRequest) {
 
   if (newQty === 0) {
     await prisma.cartItem.delete({ where: { id: cartItemId } });
+    await logUserAction({
+      user: {
+        id: session.id,
+        email: session.email,
+        name: session.name,
+        role: session.role,
+      },
+      action: "CART_REMOVE",
+      entityType: "CART",
+      entityId: item.productId,
+      meta: { size: item.size },
+      request,
+    });
     return NextResponse.json({ ok: true, quantity: 0 });
   }
-  await prisma.cartItem.update({
+  const updated = await prisma.cartItem.update({
     where: { id: cartItemId },
     data: { quantity: newQty },
+  });
+  await logUserAction({
+    user: {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+    },
+    action: "CART_UPDATE",
+    entityType: "CART",
+    entityId: updated.productId,
+    meta: { size: updated.size, quantity: updated.quantity },
+    request,
   });
   return NextResponse.json({ ok: true, quantity: newQty });
 }
@@ -91,8 +131,29 @@ export async function DELETE(request: NextRequest) {
   const cartItemId = searchParams.get("id");
   if (!cartItemId) return NextResponse.json({ error: "id 필요" }, { status: 400 });
 
+  const item = await prisma.cartItem.findFirst({
+    where: { id: cartItemId, userId: session.id },
+  });
+
   await prisma.cartItem.deleteMany({
     where: { id: cartItemId, userId: session.id },
   });
+
+  if (item) {
+    await logUserAction({
+      user: {
+        id: session.id,
+        email: session.email,
+        name: session.name,
+        role: session.role,
+      },
+      action: "CART_REMOVE",
+      entityType: "CART",
+      entityId: item.productId,
+      meta: { size: item.size },
+      request,
+    });
+  }
+
   return NextResponse.json({ ok: true });
 }
