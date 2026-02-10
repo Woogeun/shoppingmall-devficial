@@ -1,0 +1,43 @@
+# 의존성 (컨테이너에서 npm ci로 설치)
+node_modules
+npm-debug.log*
+.npm
+yarn-debug.log*
+.yarn-integrity
+.pnpm-debug.log*
+
+# Next.js 빌드 결과 (컨테이너에서 새로 빌드)
+.next
+out
+
+# Git
+.git
+.gitignore
+
+# IDE / 에디터
+.cursor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# 테스트 / 커버리지
+coverage
+.nyc_output
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__
+__mocks__
+
+# 문서 / 기타
+README.md
+*.md
+.DS_Store
+Thumbs.db
+
+# Docker (빌드 컨텍스트에 불필요)
+Dockerfile
+.dockerignore
